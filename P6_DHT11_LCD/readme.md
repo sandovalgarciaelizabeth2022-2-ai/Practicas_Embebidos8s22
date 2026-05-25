@@ -21,3 +21,41 @@ DATA -> GPIO17 (Pin 11)
 |
 +--[10kΩ]---> 5V (Pull-up)
 
+
+
+import adafruit_dht
+import board
+
+class DHT11Sensor:
+    def __init__(self, pin=board.D17):
+        self.sensor = adafruit_dht.DHT11(pin)
+
+    def read_data(self):
+        try:
+            temperature = self.sensor.temperature
+            humidity = self.sensor.humidity
+            return temperature, humidity
+        except RuntimeError as e:
+            print(f"[WARN] Lectura fallida: {e}")
+            return None, None
+from RPLCD.i2c import CharLCD
+
+class LCDDisplay:
+    def __init__(self, address=0x27):
+        self.lcd = CharLCD('PCF8574', address)
+        self.lcd.clear()
+
+    def show_message(self, line1, line2=""):
+        self.lcd.clear()
+        self.lcd.write_string(line1.ljust(16))
+        if line2:
+            self.lcd.crlf()
+            self.lcd.write_string(line2.ljust(16))
+
+import time
+
+def delay(seconds):
+    try:
+        time.sleep(seconds)
+    except KeyboardInterrupt:
+        print("Interrupción del usuario.")
